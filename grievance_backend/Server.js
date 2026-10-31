@@ -5,6 +5,7 @@ const cors = require("cors")
 const AuthRoutes = require("./src/Routes/AuthRoutes")
 const departmentRoutes = require("./src/Routes/DepartmenRoutes")
 const GriveanceRoutes = require("./src/Routes/GriveanceRoutes")
+const userRouter = require("./src/Routes/UserRoutes")
 const app = express()
 dotenv.config()
 
@@ -20,6 +21,7 @@ app.use("/test",(req,res)=>{
 app.use("/api/auth",AuthRoutes)
 app.use("/api/Department",departmentRoutes)
 app.use("/api/grievances",GriveanceRoutes)
+app.use("/api/users",userRouter)
 
 
 connect()
