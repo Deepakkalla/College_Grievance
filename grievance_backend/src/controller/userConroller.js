@@ -45,9 +45,8 @@ const createOfficer = async (req,res)=>{
 }
 
 const getUsers = async (req,res)=>{
-    try{
 
-    
+    try{    
     const {role,department} = req.query
     const filter = {}
     if(role) filter.role = role
@@ -58,6 +57,7 @@ const getUsers = async (req,res)=>{
 
     res.json(users)
     }
+    
     catch(error){
         res.status(500).json({message:error.message})
     }

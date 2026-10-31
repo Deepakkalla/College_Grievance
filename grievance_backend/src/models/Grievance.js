@@ -79,9 +79,11 @@ const GrievanceSchema = new mongoose.Schema(
             type:mongoose.Schema.Types.ObjectId,
             ref:"User"
         },
+
         assignedTo:{
             type:mongoose.Schema.Types.ObjectId,
-            ref:"User"
+            ref:"User",
+            default :{}
             
         },
         isAnonymous:{
