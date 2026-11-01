@@ -3,6 +3,7 @@ const Griveance = require("../models/Grievance");
 const User = require("../models/User")
 const Department = require("../models/Department");
 const Grievance = require("../models/Grievance");
+const Anonyomous = require("../utils/Anonyomous");
 
 const CreateGriveance = async (req, res) => {
   try {
@@ -106,7 +107,6 @@ const assignGrievance = async (req, res) => {
 
   try{
 
-  
   const { officer } = req.body;
 
   if (!officer) return res.status(400).json({ message: "officer id required" });
@@ -120,12 +120,12 @@ const assignGrievance = async (req, res) => {
     return res.status(404).json({message:"officer not Found"})
 
   }
-  grievance.assignedTo = officer._id
+  grievance.assignedTo = officerExist._id
   if(grievance.status==="submitted"){
     grievance.status = "under_review"
 
   }
- await  grievance.save()
+ await grievance.save()
 
  const updated  = await Grievance.findById(grievance._id).populate("department","name").populate("assignedTo","name email") .populate("createdBy","name email")
 
@@ -137,4 +137,85 @@ catch(error){
 
 };
 
-module.exports = { CreateGriveance, getMyGriveance, getGrievanceById, assignGrievance };
+const getAssignedGrievance = async (req, res) => {
+ try {
+    const { status, category, search, page = 1, limit = 10 } = req.query;
+
+    const filter = { assignedTo: req.user._id };
+
+    if (status) filter.status = status;
+    if (category) filter.status = category;
+
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search, $options: "i" } }, // its means in title it doesnot match for string it match for a pattern because we wrote $regex
+        { ticketId: { $regex: search, $options: "i" } },
+      ];
+    }
+    const pageNum = Math.max(parseInt(page) || 1, 1);
+    const limitNum = Math.min(Math.max(parseInt(limit) || 10, 1), 50);
+    const griveance = await Griveance.find(filter)
+      .populate("department", "name") // there is only field name not Moel reference
+      .sort({ createdAt: -1 })
+      .skip((pageNum - 1) * limitNum) // ye query se first 10,20 document skip karke bhej ta hai
+      .limit(limitNum); // ye tay karta  hai ki database se kitne document chaiye
+
+    const totalPages = await Griveance.countDocuments(filter);
+
+    return res.json({
+      griveance:griveance.map((g)=> Anonyomous(g,req.user)), 
+      page: pageNum,
+      totalPage: Math.ceil(totalPages / limitNum),
+      totalPages,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const updateStatus = async (req,res)=>{
+  try{
+
+    const {status} = req.body
+    if(!status){
+      return res.json({message:"status not found"})
+    }
+
+    const grievance = await Grievance.findById(req.params.id)
+
+    if(!grievance){
+      return res.json({message:"grievance not found"})
+    }
+
+    const user  = req.user
+    const isAssignedofficer = grievance.assignedTo&&grievance.assignedTo.equals(user._id)
+
+    if(!isAssignedofficer||user.role !== "admin"){
+      return res.json({message:"access denial"})
+
+
+    }
+    grievance.status = status
+    await grievance.save()
+
+    res.json({
+      _id:grievance._id,
+      ticketId:grievance.ticketId,
+      status:grievance.status
+
+    })
+  }
+  catch(error){
+    res.json({messsage:error.message})
+  }
+
+
+
+}
+
+
+
+
+
+module.exports = { CreateGriveance, getMyGriveance, getGrievanceById, assignGrievance , getAssignedGrievance,updateStatus};
+
