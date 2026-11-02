@@ -1,6 +1,7 @@
 const express = require("express")
-const {CreateGriveance, getMyGriveance, getGrievanceById, assignGrievance, getAssignedGrievance, updateStatus} = require("../controller/griveanceController")
+const {CreateGriveance, getMyGriveance, getGrievanceById, assignGrievance, getAssignedGrievance, updateStatus, getAllGrievance} = require("../controller/griveanceController")
 const {protect, Authrioze} = require("../controller/authController")
+const Grievance = require("../models/Grievance")
 
 
 const GriveanceRoutes = express.Router()
@@ -11,6 +12,7 @@ GriveanceRoutes.get("/:id",protect,getGrievanceById)
 GriveanceRoutes.post("/:id/assign",protect,Authrioze("admin"),assignGrievance)
 GriveanceRoutes.get("/assigned",protect,Authrioze("officer"),getAssignedGrievance)
 GriveanceRoutes.patch(":id/status",protect,Authrioze("officer","admin",updateStatus))
+GriveanceRoutes.get("/",protect,Authrioze("admin"),getAllGrievance)
 
 
 

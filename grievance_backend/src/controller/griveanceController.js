@@ -4,6 +4,7 @@ const User = require("../models/User")
 const Department = require("../models/Department");
 const Grievance = require("../models/Grievance");
 const Anonyomous = require("../utils/Anonyomous");
+const { options } = require("../Routes/AuthRoutes");
 
 const CreateGriveance = async (req, res) => {
   try {
@@ -213,9 +214,67 @@ const updateStatus = async (req,res)=>{
 
 }
 
+const getAllGrievance =async (req,res)=>{
+  try{
+      const {
+      status,
+      category,
+      priority,
+      department,
+      assignedTo,
+      search,
+      page = 1,
+      limit = 10,
+    } = req.query
+    const filter = {}
+     if (status) filter.status = status;
+    if (category) filter.category = category;
+    if (priority) filter.priority = priority;
+    if (department) filter.department = department;
+
+    if(assignedTo =="unassigned"){
+      filter.assignedTo = null
+    }
+    else if(assignedTo){
+      filter.assignedTo = assignedTo
+    }
+    if(search){
+      filter.$or = [
+       { title:{$regex:search ,options:"i" }},
+       { ticketId:{$regex:search ,options:"i" }}
+      ]
+    }
+    console.log("hello")
+    const pageNum = Math.max(parseInt(page)||1,1)
+    const limitNum = Math.min(Math.max(parseInt(limit)||10,1),50)
+
+
+    console.log("hello 2")
+    
+    
+    const grievance = await Grievance.find(filter).populate("department","name").populate("createdBy","name email").populate("assignedTo","name email").sort({createdAt:-1}).skip((pageNum-1)*limitNum).limit(limitNum)
+    
+    const total = await Grievance.countDocuments(filter)
+    console.log("hello 3")
+    
+    res.json({
+      grievance,
+      page:pageNum,
+      totalPages:Math.ceil(total/limitNum),
+      total
+    })
+    console.log("hello 4")
+
+  }
+  catch(error){
+    res.json({message:error.message})
+
+  }
+}
 
 
 
 
-module.exports = { CreateGriveance, getMyGriveance, getGrievanceById, assignGrievance , getAssignedGrievance,updateStatus};
+
+module.exports = { CreateGriveance, getMyGriveance, getGrievanceById, assignGrievance , getAssignedGrievance,updateStatus,getAllGrievance};
 
