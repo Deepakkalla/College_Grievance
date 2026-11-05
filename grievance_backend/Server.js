@@ -7,6 +7,7 @@ const departmentRoutes = require("./src/Routes/DepartmenRoutes")
 const GriveanceRoutes = require("./src/Routes/GriveanceRoutes")
 const userRouter = require("./src/Routes/UserRoutes")
 const CommentRoutes = require("./src/Routes/CommentRoutes")
+const { analyticsRoutes } = require("./src/Routes/analysticsRoutes")
 const app = express()
 dotenv.config()
 
@@ -24,6 +25,7 @@ app.use("/api/Department",departmentRoutes)
 app.use("/api/grievances/:grievanceId/comments",CommentRoutes)
 app.use("/api/grievances",GriveanceRoutes)
 app.use("/api/users",userRouter)
+app.use("/api/analytics",analyticsRoutes)
 
 
 connect()

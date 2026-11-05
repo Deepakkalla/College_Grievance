@@ -3,10 +3,12 @@ const {CreateGriveance, getMyGriveance, getGrievanceById, assignGrievance, getAs
 const {protect, Authrioze} = require("../controller/authController")
 const Grievance = require("../models/Grievance")
 
+const upload =   require("../utils/MulterUpload")
+
 
 const GriveanceRoutes = express.Router()
 
-GriveanceRoutes.post("/creategriveance",protect,CreateGriveance)
+GriveanceRoutes.post("/creategriveance",protect,upload.array("attachment",3),CreateGriveance)
 GriveanceRoutes.get("/my",protect,getMyGriveance)
 GriveanceRoutes.get("/:id",protect,getGrievanceById)
 GriveanceRoutes.post("/:id/assign",protect,Authrioze("admin"),assignGrievance)

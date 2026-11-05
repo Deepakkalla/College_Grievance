@@ -8,6 +8,7 @@ const { options } = require("../Routes/AuthRoutes");
 
 const CreateGriveance = async (req, res) => {
   try {
+    console.log("start")
     let { title, description, category, department, priority, isAnonymous } =
       req.body;
     if (!title || !description || !category || !department || !priority) {
@@ -21,12 +22,13 @@ const CreateGriveance = async (req, res) => {
       );
       return res.status(400).json({ message: "Enter  required field " });
     }
-    const departementExist = await Department.find({ name: department });
+    const departementExist = await Department.findOne({ name: department });
     console.log(departementExist);
     if (!departementExist) {
       return res.status(400).json({ message: "depatemnt did not dfound " });
     }
     department = departementExist._id; // when we declare any field type ref object id it has to be id of another model
+    console.log("hello");
     const griveance = await Griveance.create({
       title,
       description,
